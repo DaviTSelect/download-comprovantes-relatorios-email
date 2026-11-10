@@ -270,8 +270,8 @@ class App(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f'Automação Conveniar Email — v{VERSION}')
-        self.resize(1180, 720)
-        self.setMinimumSize(880, 640)
+        self.resize(1180, 750)
+        self.setMinimumSize(880, 670)
         self.planilha_path = ''
         self.assinatura_path = ''
         self.pedidos: list[Pedido] = []
