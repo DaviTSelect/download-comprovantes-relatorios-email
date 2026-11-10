@@ -160,21 +160,37 @@ def _fechar_modal(driver: webdriver.Chrome, wait: WebDriverWait) -> None:
 
 def _aguardar_arquivo_novo(pasta: str, qtd_antes: int, timeout: int = 60) -> Path:
     pasta_path = Path(pasta)
+    tamanho_tmp: dict[str, int] = {}
+
     for _ in range(timeout):
+        # Enquanto houver .crdownload, Chrome ainda está baixando — aguarda
+        if any(f.suffix == ".crdownload" for f in pasta_path.iterdir() if f.is_file()):
+            time.sleep(1)
+            continue
+
+        # Arquivo novo já chegou com extensão final (ex: .pdf direto)
         arquivos = [
             f for f in pasta_path.iterdir()
             if f.is_file() and f.suffix not in (".crdownload", ".tmp")
         ]
         if len(arquivos) > qtd_antes:
             return max(arquivos, key=lambda f: f.stat().st_mtime)
-        # Verifica .tmp que pode ser o PDF com nome UUID (Chrome sem Content-Disposition)
+
+        # Chrome baixa como .tmp quando o servidor omite Content-Disposition.
+        # Só renomeia para .pdf depois que o tamanho estabiliza — garante que
+        # o Chrome terminou de escrever antes de movermos o arquivo.
         tmps = [f for f in pasta_path.iterdir() if f.is_file() and f.suffix == ".tmp"]
         if tmps:
             tmp = max(tmps, key=lambda f: f.stat().st_mtime)
-            pdf = tmp.with_suffix(".pdf")
-            tmp.rename(pdf)
-            logger.info("Arquivo renomeado de .tmp para .pdf: %s", pdf.name)
-            return pdf
+            tamanho_atual = tmp.stat().st_size
+            chave = str(tmp)
+            if tamanho_atual > 0 and tamanho_tmp.get(chave) == tamanho_atual:
+                pdf = tmp.with_suffix(".pdf")
+                tmp.rename(pdf)
+                logger.info("Arquivo renomeado de .tmp para .pdf: %s", pdf.name)
+                return pdf
+            tamanho_tmp[chave] = tamanho_atual
+
         time.sleep(1)
     raise TimeoutError(f"Nenhum arquivo novo em {pasta} após {timeout}s")
 
