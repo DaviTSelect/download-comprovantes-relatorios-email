@@ -32,7 +32,7 @@ Variáveis necessárias (ver `.env.example`):
 | `GRAPH_CLIENT_SECRET` | Secret do app Azure AD |
 | `GRAPH_TENANT_ID` | Tenant ID da organização |
 | `USER_EMAIL` | E-mail remetente (caixa que envia) |
-| `CONVENIAR_URL` | URL base do portal (padrão: https://www.conveniar.com.br) |
+| `CONVENIAR_URL` | URL base do portal (padrão: https://facto.conveniar.com.br) |
 | `CONVENIAR_USUARIO` | Usuário de login no Conveniar |
 | `CONVENIAR_SENHA` | Senha de login no Conveniar |
 
@@ -65,7 +65,7 @@ download-comprovantes-relatorios-email/
 │   ├── conveniar_bot.py        # Selenium — baixa arquivos do Conveniar
 │   ├── send_email.py           # Graph API — envia e-mail com anexos
 │   ├── search_email.py         # Graph API — busca e-mails recebidos
-│   └── download_attachments.py # Graph API — baixa anexos de e-mails
+│   └── download_attachments.py # Graph API — baixa anexos de e-mails recebidos
 ├── dados/
 │   └── planilha_modelo.xlsx    # template da planilha de entrada
 ├── logs/                       # logs de execução (não versionados)
