@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: |
+          python -m venv .venv
+          .venv\Scripts\pip install -r requirements.txt -r requirements-build.txt -q
+
+      - name: Validar versão da tag
+        shell: pwsh
+        run: |
+          $version = (.venv\Scripts\python -c "from version import VERSION; print(VERSION)")
+          $tag     = "${{ github.ref_name }}"
+          if ($tag -ne "v$version") {
+            Write-Error "Tag $tag diferente de v$version em version.py"
+            exit 1
+          }
+          Write-Host "Versão OK: $tag"
+
+      - name: Compilar executável
+        run: .venv\Scripts\pyinstaller AutomacaoConveniarEmail.spec --noconfirm
+
+      - name: Calcular SHA-256
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash dist\AutomacaoConveniarEmail.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  AutomacaoConveniarEmail.exe" | Out-File -Encoding utf8 dist\AutomacaoConveniarEmail.exe.sha256
+          "SHA256=$hash" | Out-File -Append $env:GITHUB_ENV
+          Write-Host "SHA-256: $hash"
+
+      - name: Publicar release no GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $tag   = "${{ github.ref_name }}"
+          $notes = "## Instalação`n`n1. Baixe ``AutomacaoConveniarEmail.exe```n2. Coloque na pasta junto com o ``.env`` configurado`n3. Execute ``AutomacaoConveniarEmail.exe```n`n**SHA-256:** $env:SHA256"
+          gh release create $tag `
+            dist\AutomacaoConveniarEmail.exe `
+            dist\AutomacaoConveniarEmail.exe.sha256 `
+            --title "Automação Conveniar Email $tag" `
+            --notes $notes
