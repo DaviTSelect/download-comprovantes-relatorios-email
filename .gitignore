@@ -1,0 +1,118 @@
+# ===== AMBIENTES VIRTUAIS =====
+venv/
+.venv/
+env/
+ENV/
+.env_folder/
+
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# ===== CREDENCIAIS E SEGREDOS =====
+.env
+*.env
+!.env.example
+secrets.json
+credentials.json
+*.pem
+*.key
+*.p12
+*.pfx
+token.txt
+
+# ===== BUILD E DISTRIBUIÇÃO =====
+build/
+dist/
+*.spec.bak
+
+# ===== DADOS GERADOS / TEMPORÁRIOS =====
+anexos/
+saida/
+saida_*/
+.tmp/
+temp/
+tmp/
+imagens_extraidas*/
+
+# ===== ARQUIVOS GERADOS PELO APP =====
+saida/*.xlsx
+saida/*.csv
+saida/*.pdf
+saida_planilha/*.xlsx
+saida_planilha/*.csv
+
+# ===== LOGS =====
+logs/*.log
+logs/*.csv
+*.log
+
+# ===== CACHE =====
+cache.json
+*.cache
+.cache/
+
+# ===== BANCO DE DADOS =====
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+instance/
+
+# ===== PERFIS DE BROWSER =====
+perfil_selenium/
+perfil_playwright/
+user_data/
+
+# ===== TESTES =====
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.cover
+
+# ===== IDE =====
+.vscode/settings.json
+.vscode/*.code-workspace
+.idea/
+*.suo
+*.user
+.vs/
+
+# ===== SISTEMA =====
+Thumbs.db
+desktop.ini
+.DS_Store
+*.lnk
+
+# ===== INSTALADORES E EXECUTÁVEIS =====
+*.exe
+*.zip
+*.msi
+dist/installer/
+
+# ===== IMAGENS DE DEBUG =====
+Captura de tela*.png
+Sem título*.png
+debug_*.png
+
+# ===== PLANILHA DE ENTRADA (dados sensíveis) =====
+dados/planilha.xlsx
+dados/planilha_modelo.xlsx
+
+# ===== ASSINATURA (imagem privada, não versionar) =====
+assinatura/*.png
+assinatura/*.jpg
+assinatura/*.jpeg
+assinatura/*.md
+
+# ===== PASTA KILO (Claude Code) =====
+.kilo/
