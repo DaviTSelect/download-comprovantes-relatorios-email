@@ -15,6 +15,16 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.1] - 2026-11-10
+
+### Corrigido
+- `.env` e pastas (`anexos/`, `dados/`, `assinatura/`, `logs/`) agora resolvem corretamente
+  na pasta do `.exe` independente do diretório de trabalho (fix para PyInstaller frozen)
+- Chrome/ChromeDriver sem caminho configurado usa o Chrome instalado no sistema automaticamente
+- Caminhos com `%USERPROFILE%` expandidos via `os.path.expandvars()`
+
+---
+
 ## [1.0.0] - 2026-11-10
 
 ### Adicionado
