@@ -15,6 +15,14 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.2] - 2026-11-10
+
+### Adicionado
+- Auto-update silencioso: ao abrir o app verifica o GitHub Releases em segundo plano,
+  baixa o novo `.exe`, valida SHA-256 e agenda a troca via PowerShell — sem interação do usuário
+
+---
+
 ## [1.0.1] - 2026-11-10
 
 ### Corrigido

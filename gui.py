@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 
+from auto_update import verificar_e_instalar
 from config import USER_EMAIL
 from core.conveniar_bot import baixar_arquivos_pedido
 from core.send_email import enviar_email
@@ -261,6 +262,7 @@ class App(QWidget):
     sinal_pedido_falhou   = Signal(int, str)   # row, msg → Erro
     sinal_tarefa_concluida = Signal(int, int)  # total, sucessos
     sinal_tarefa_falhou   = Signal(str)
+    sinal_fechar_app      = Signal()           # auto-update: fecha para trocar o .exe
 
     def __init__(self):
         super().__init__()
@@ -287,7 +289,16 @@ class App(QWidget):
         self.sinal_pedido_falhou.connect(self._ao_falhar_pedido)
         self.sinal_tarefa_concluida.connect(self._ao_concluir_tudo)
         self.sinal_tarefa_falhou.connect(self._ao_falhar_tudo)
+        self.sinal_fechar_app.connect(self.close)
         self._atualizar_estado()
+        threading.Thread(target=self._verificar_atualizacao, daemon=True).start()
+
+    # ── Auto-update ───────────────────────────────────────────────────────────
+
+    def _verificar_atualizacao(self) -> None:
+        resultado = verificar_e_instalar()
+        if resultado == "atualizando":
+            self.sinal_fechar_app.emit()
 
     # ── Montagem ──────────────────────────────────────────────────────────────
 
