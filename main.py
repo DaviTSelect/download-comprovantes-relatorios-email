@@ -15,19 +15,12 @@ from pathlib import Path
 
 import openpyxl
 
-from config import USER_EMAIL
+from config import BASE_DIR, USER_EMAIL
 from core.conveniar_bot import baixar_arquivos_pedido
 from core.send_email import enviar_email
 from utils import configurar_logging, salvar_relatorio_erros
 
-# Quando rodando como .exe (PyInstaller frozen), logs ficam na pasta do executável.
-# Quando rodando como script, logs ficam no diretório de trabalho corrente.
-if getattr(sys, "frozen", False):
-    _BASE_DIR = Path(sys.executable).parent
-else:
-    _BASE_DIR = Path(".")
-
-LOG_DIR = _BASE_DIR / "logs"
+LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 configurar_logging(LOG_DIR / "app.log")
 
