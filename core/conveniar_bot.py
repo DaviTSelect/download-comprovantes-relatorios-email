@@ -61,7 +61,21 @@ _COL_NOME_ARQUIVO = 3   # coluna "Nome Arquivo" no gvDocumentos
 
 def _criar_driver(pasta_download: str) -> webdriver.Chrome:
     options = webdriver.ChromeOptions()
-    options.binary_location = CHROME_BINARY
+
+    # Só define binary_location se um caminho portátil foi configurado.
+    # Sem isso, o Selenium usa o Chrome instalado normalmente no sistema.
+    if CHROME_BINARY:
+        chrome_path = Path(CHROME_BINARY)
+        if not chrome_path.exists():
+            raise FileNotFoundError(
+                f"Chrome não encontrado em: {chrome_path}\n"
+                "Verifique CHROME_BINARY no .env ou remova a variável para usar o Chrome do sistema."
+            )
+        options.binary_location = str(chrome_path)
+        logger.info("Usando Chrome portátil: %s", chrome_path)
+    else:
+        logger.info("Usando Chrome instalado no sistema (CHROME_BINARY não configurado)")
+
     prefs = {
         "download.default_directory": os.path.abspath(pasta_download),
         "download.prompt_for_download": False,
@@ -69,7 +83,22 @@ def _criar_driver(pasta_download: str) -> webdriver.Chrome:
     }
     options.add_experimental_option("prefs", prefs)
     # options.add_argument("--headless=new")
-    service = Service(executable_path=CHROMEDRIVER_PATH)
+
+    # Só define executable_path se um chromedriver portátil foi configurado.
+    # Sem isso, o Selenium Manager baixa e gerencia o chromedriver automaticamente.
+    if CHROMEDRIVER_PATH:
+        driver_path = Path(CHROMEDRIVER_PATH)
+        if not driver_path.exists():
+            raise FileNotFoundError(
+                f"ChromeDriver não encontrado em: {driver_path}\n"
+                "Verifique CHROMEDRIVER_PATH no .env ou remova a variável para usar o Selenium Manager."
+            )
+        service = Service(executable_path=str(driver_path))
+        logger.info("Usando ChromeDriver portátil: %s", driver_path)
+    else:
+        service = Service()
+        logger.info("ChromeDriver gerenciado automaticamente pelo Selenium Manager")
+
     return webdriver.Chrome(service=service, options=options)
 
 
