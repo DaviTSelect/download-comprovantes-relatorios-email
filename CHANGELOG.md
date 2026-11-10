@@ -15,6 +15,20 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.3] - 2026-11-10
+
+### Adicionado
+- Interface: etapa 02 "Assinatura do e-mail" — seleção de PNG diretamente
+  pelo painel; pré-carrega automaticamente se já houver PNG em `assinatura/`
+- Logging: `logger.exception()` nos blocos de download e envio do `gui.py` —
+  erros agora aparecem em `logs/app.log` com traceback completo
+
+### Corrigido
+- Download: `.tmp` só é renomeado para `.pdf` após o tamanho estabilizar,
+  evitando corrupção quando o Chrome ainda está gravando o arquivo
+
+---
+
 ## [1.0.2] - 2026-11-10
 
 ### Adicionado
