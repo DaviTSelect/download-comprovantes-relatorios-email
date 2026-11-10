@@ -7,6 +7,7 @@ Como a janela está organizada:
 """
 from __future__ import annotations
 
+import logging
 import sys
 import threading
 from pathlib import Path
@@ -23,10 +24,12 @@ from PySide6.QtWidgets import (
 )
 
 from auto_update import verificar_e_instalar
-from config import USER_EMAIL
+from config import USER_EMAIL, PASTA_ASSINATURA
 from core.conveniar_bot import baixar_arquivos_pedido
 from core.send_email import enviar_email
 from version import VERSION
+
+logger = logging.getLogger(__name__)
 
 # ── Paleta idêntica ao padrão corporativo ────────────────────────────────────
 BG  = '#203447'
@@ -270,6 +273,7 @@ class App(QWidget):
         self.resize(1180, 720)
         self.setMinimumSize(880, 640)
         self.planilha_path = ''
+        self.assinatura_path = ''
         self.pedidos: list[Pedido] = []
         self.started = False
         self.setStyleSheet(f'background:{BG};')
@@ -358,7 +362,7 @@ class App(QWidget):
         top = QHBoxLayout(); top.setContentsMargins(30, 20, 30, 16)
         titles = QVBoxLayout(); titles.setSpacing(5)
         titles.addWidget(_rotulo('Configurar automação', 14, BG, QFont.DemiBold))
-        self.subtitle = _rotulo('Selecione a planilha para começar', 10, '#7a838a')
+        self.subtitle = _rotulo('Selecione a planilha e a assinatura para começar', 10, '#7a838a')
         titles.addWidget(self.subtitle)
         top.addLayout(titles); top.addStretch()
         self.badge_total = _rotulo('0 pedidos', 9, '#68747d', QFont.Bold)
@@ -373,6 +377,24 @@ class App(QWidget):
             'Selecionar planilha', 'save', self.escolher_planilha,
         )
         lay.addWidget(self.row_planilha)
+        lay.addWidget(_divisor('#e3e5e2'))
+
+        # Pre-carrega assinatura da pasta padrão, se existir
+        pngs_padrao = sorted(PASTA_ASSINATURA.glob("*.png")) if PASTA_ASSINATURA.exists() else []
+        desc_assinatura = (
+            'Imagem PNG que aparece ao final do e-mail. '
+            'Se não selecionar, o e-mail é enviado sem assinatura.'
+        )
+        self.row_assinatura = SelectionRow(
+            '02', 'Assinatura do e-mail',
+            desc_assinatura,
+            'Selecionar assinatura', 'file', self.escolher_assinatura,
+        )
+        if pngs_padrao:
+            self.assinatura_path = str(pngs_padrao[0])
+            self.row_assinatura.definir_valor(pngs_padrao[0].name)
+        lay.addWidget(self.row_assinatura)
+
         self.div_tabela = _divisor('#e3e5e2')
         self.div_tabela.hide()
         lay.addWidget(self.div_tabela)
@@ -428,6 +450,15 @@ class App(QWidget):
         self.tabela_widget.show(); self.div_tabela.show()
         self._atualizar_estado()
 
+    def escolher_assinatura(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, 'Selecionar imagem de assinatura', '', 'Imagens PNG (*.png)'
+        )
+        if not path:
+            return
+        self.assinatura_path = path
+        self.row_assinatura.definir_valor(Path(path).name)
+
     def _atualizar_estado(self):
         n = len(self.pedidos)
         pronto = n > 0 and not self.started
@@ -472,8 +503,9 @@ class App(QWidget):
             try:
                 arquivos, nome_projeto = baixar_arquivos_pedido(pedido.numero_pedido)
                 nome = nome_projeto or pedido.nome_projeto
-                pendentes.append((i, pedido.email, arquivos, nome))
+                pendentes.append((i, pedido.numero_pedido, pedido.email, arquivos, nome))
             except Exception as exc:
+                logger.exception("[Download] Erro no pedido %s", pedido.numero_pedido)
                 self.sinal_pedido_falhou.emit(i, str(exc))
                 pendentes.append(None)
 
@@ -484,13 +516,14 @@ class App(QWidget):
         for item in pendentes:
             if item is None:
                 continue
-            i, email, arquivos, nome = item
+            i, numero_pedido, email, arquivos, nome = item
             self.sinal_enviando.emit(i)
             try:
-                enviar_email(email, nome, arquivos, USER_EMAIL)
+                enviar_email(email, nome, arquivos, USER_EMAIL, self.assinatura_path or None)
                 self.sinal_pedido_concluido.emit(i)
                 sucesso += 1
             except Exception as exc:
+                logger.exception("[Envio] Erro no pedido %s", numero_pedido)
                 self.sinal_pedido_falhou.emit(i, str(exc))
 
         self.sinal_tarefa_concluida.emit(len(pedidos), sucesso)

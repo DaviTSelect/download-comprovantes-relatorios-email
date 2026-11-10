@@ -23,22 +23,30 @@ def _ler_como_anexo(caminho: str) -> dict:
     }
 
 
-def _carregar_assinatura() -> dict | None:
+def _carregar_assinatura(caminho: str | None = None) -> dict | None:
+    """Carrega a assinatura PNG como anexo inline (cid:).
+
+    Se ``caminho`` for fornecido, usa esse arquivo.
+    Caso contrário, procura o primeiro PNG em PASTA_ASSINATURA.
+    Retorna None se não houver assinatura disponível.
     """
-    Procura o primeiro PNG na pasta assinatura/ e retorna como
-    anexo inline (contentId) para ser referenciado no HTML via cid:.
-    Retorna None se a pasta não existir ou não tiver PNG.
-    """
-    if not PASTA_ASSINATURA.exists():
+    if caminho:
+        png = Path(caminho)
+    else:
+        if not PASTA_ASSINATURA.exists():
+            return None
+        pngs = sorted(PASTA_ASSINATURA.glob("*.png"))
+        if not pngs:
+            return None
+        png = pngs[0]
+
+    if not png.exists():
         return None
-    pngs = sorted(PASTA_ASSINATURA.glob("*.png"))
-    if not pngs:
-        return None
-    with open(pngs[0], "rb") as f:
+    with open(png, "rb") as f:
         conteudo_b64 = base64.b64encode(f.read()).decode()
     return {
         "@odata.type": "#microsoft.graph.fileAttachment",
-        "name": pngs[0].name,
+        "name": png.name,
         "contentBytes": conteudo_b64,
         "contentId": _CID_ASSINATURA,
         "isInline": True,
@@ -79,10 +87,12 @@ def enviar_email(
     nome_projeto: str,
     arquivos: list[str],
     remetente: str,
+    assinatura_path: str | None = None,
 ) -> None:
-    """
-    Envia e-mail HTML com comprovante de pagamento, recibo e assinatura
-    (PNG inline de assinatura/) via Microsoft Graph API.
+    """Envia e-mail com comprovante e recibo via Microsoft Graph API.
+
+    ``assinatura_path``: caminho para PNG de assinatura selecionado na GUI.
+    Se None, tenta carregar o primeiro PNG de PASTA_ASSINATURA.
     """
     token = pegar_token()
     headers = {
@@ -90,7 +100,7 @@ def enviar_email(
         "Content-Type": "application/json",
     }
 
-    assinatura = _carregar_assinatura()
+    assinatura = _carregar_assinatura(assinatura_path)
     corpo_html = _montar_corpo(com_assinatura=assinatura is not None)
 
     anexos = [_ler_como_anexo(a) for a in arquivos]
