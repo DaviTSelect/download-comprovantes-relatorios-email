@@ -21,9 +21,14 @@ CONVENIAR_URL     = os.environ.get("CONVENIAR_URL", "https://facto.conveniar.com
 CONVENIAR_USUARIO = _exigir("CONVENIAR_USUARIO")
 CONVENIAR_SENHA   = _exigir("CONVENIAR_SENHA")
 
-# Chrome portátil — configurar via .env se usar Chrome não-padrão
-CHROME_BINARY     = os.environ.get("CHROME_BINARY")     or None
-CHROMEDRIVER_PATH = os.environ.get("CHROMEDRIVER_PATH") or None
+# Chrome portátil — suporta %USERPROFILE% e $HOME no valor
+def _expandir(nome: str):
+    valor = os.environ.get(nome) or ""
+    expandido = os.path.expandvars(valor).strip()
+    return expandido or None
+
+CHROME_BINARY     = _expandir("CHROME_BINARY")
+CHROMEDRIVER_PATH = _expandir("CHROMEDRIVER_PATH")
 
 # Caminhos
 PASTA_DOWNLOADS  = Path("anexos")
