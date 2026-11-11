@@ -15,6 +15,15 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.5] - 2026-11-11
+
+### Adicionado
+- Ícone `logo.ico` aplicado à janela, barra de tarefas e alt-tab via `app.setWindowIcon()`
+- Ícone `logo.ico` embutido no `.exe` via PyInstaller (`icon='logo.ico'`)
+- `logo.ico` incluído no bundle do PyInstaller como dado (`datas`) para funcionar no `.exe`
+
+---
+
 ## [1.0.4] - 2026-11-11
 
 ### Adicionado

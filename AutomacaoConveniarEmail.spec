@@ -8,6 +8,7 @@ a = Analysis(
         ('dados/planilha_modelo.xlsx', 'dados'),
         ('assinatura/.gitkeep',        'assinatura'),
         ('logs/.gitkeep',              'logs'),
+        ('logo.ico',                   '.'),
     ],
     hiddenimports=[
         'msal',
@@ -42,7 +43,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    icon=None,          # TODO: adicionar logo.ico na raiz
+    icon='logo.ico',
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,

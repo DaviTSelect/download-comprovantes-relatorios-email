@@ -24,10 +24,12 @@ from PySide6.QtWidgets import (
 )
 
 from auto_update import verificar_e_instalar
-from config import USER_EMAIL, PASTA_ASSINATURA
+from config import BASE_DIR, USER_EMAIL, PASTA_ASSINATURA
 from core.conveniar_bot import baixar_arquivos_pedido
 from core.send_email import enviar_email
 from version import VERSION
+
+_LOGO_ICO = str(BASE_DIR / "logo.ico")
 
 logger = logging.getLogger(__name__)
 
@@ -636,7 +638,10 @@ def _ler_planilha(path: Path) -> list[Pedido]:
 def abrir_janela() -> int:
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
+    icone = QIcon(_LOGO_ICO)
+    app.setWindowIcon(icone)   # barra de tarefas + alt-tab
     window = App()
+    window.setWindowIcon(icone)
     window.show()
     return app.exec()
 
