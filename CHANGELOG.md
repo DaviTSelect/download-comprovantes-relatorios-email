@@ -15,6 +15,14 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.7] - 2026-11-11
+
+### Corrigido
+- `logo.ico` regenerado com 6 tamanhos (16, 32, 48, 64, 128, 256 px) — ícone
+  agora aparece corretamente no Explorer, barra de tarefas e título da janela
+
+---
+
 ## [1.0.6] - 2026-11-11
 
 ### Corrigido
