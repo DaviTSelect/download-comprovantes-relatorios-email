@@ -15,6 +15,14 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.6] - 2026-11-11
+
+### Corrigido
+- Ícone do `.exe`: caminho absoluto no spec e UPX desativado para garantir que o
+  ícone seja corretamente embutido e visível no Windows Explorer e barra de tarefas
+
+---
+
 ## [1.0.5] - 2026-11-11
 
 ### Adicionado
