@@ -19,7 +19,7 @@ from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView, QApplication, QFileDialog, QFrame,
     QGraphicsDropShadowEffect, QHBoxLayout, QHeaderView, QLabel,
-    QMessageBox, QPushButton, QTableWidget, QTableWidgetItem,
+    QMessageBox, QPushButton, QScrollArea, QTableWidget, QTableWidgetItem,
     QVBoxLayout, QWidget,
 )
 
@@ -49,7 +49,11 @@ ESTILO_INICIAR_ATIVO = f'''QPushButton {{background:{ACTION}; color:white; borde
     border-radius:9px; font:600 11px "Segoe UI"; padding:0 19px;}}
     QPushButton:hover {{background:#d74118;}}'''
 ESTILO_INICIAR_INATIVO = '''QPushButton {background:#d8dad9; color:#92999b; border:none;
-    border-radius:9px; font:600 11px "Segoe UI"; padding:0 19px;}'''
+    border-radius:9px; font:600 11px "Segoe UI"; padding:0 19px;}
+    QPushButton:disabled {background:#d8dad9; color:#92999b;}'''
+ESTILO_INICIAR_RODANDO = '''QPushButton {background:#2a4255; color:#a5b4c0; border:none;
+    border-radius:9px; font:600 11px "Segoe UI"; padding:0 19px;}
+    QPushButton:disabled {background:#2a4255; color:#a5b4c0;}'''
 
 # ── Status ────────────────────────────────────────────────────────────────────
 ST_PENDENTE  = 'Pendente'
@@ -126,6 +130,26 @@ class Icon(QWidget):
         path = QPainterPath()
         path.moveTo(6.75, 12.25); path.lineTo(10, 15.5); path.lineTo(17.25, 8.25)
         p.drawPath(path)
+
+
+_ESTILO_DIALOGO = """
+    QMessageBox { background-color: #203447; }
+    QLabel { color: #efede5; font-family: "Segoe UI"; font-size: 13px; }
+    QPushButton { background: #e94c1f; color: white; border: none; border-radius: 6px;
+                  font: 600 11px "Segoe UI"; padding: 6px 20px; min-width: 70px; }
+    QPushButton:hover { background: #d74118; }
+"""
+
+
+def _dialogo(parent, titulo: str, msg: str, icone=QMessageBox.Information,
+             botoes=QMessageBox.Ok) -> int:
+    dlg = QMessageBox(parent)
+    dlg.setWindowTitle(titulo)
+    dlg.setText(msg)
+    dlg.setIcon(icone)
+    dlg.setStandardButtons(botoes)
+    dlg.setStyleSheet(_ESTILO_DIALOGO)
+    return dlg.exec()
 
 
 def _rotulo(text, size, color, weight=QFont.Normal, wrap=False):
@@ -371,13 +395,31 @@ class App(QWidget):
         lay.addLayout(top)
 
     def _corpo_cartao(self, lay):
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setStyleSheet('''
+            QScrollArea { background: transparent; border: none; }
+            QScrollBar:vertical { background: #ebebe7; width: 6px; border-radius: 3px; margin: 0; }
+            QScrollBar::handle:vertical { background: #c5c8c6; border-radius: 3px; min-height: 24px; }
+            QScrollBar::handle:vertical:hover { background: #a8aaa8; }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+        ''')
+
+        conteudo = QWidget()
+        conteudo.setStyleSheet('background: transparent;')
+        cly = QVBoxLayout(conteudo)
+        cly.setContentsMargins(0, 0, 0, 0)
+        cly.setSpacing(0)
+
         self.row_planilha = SelectionRow(
             '01', 'Planilha de pedidos',
             'Selecione o arquivo .xlsx com as colunas: numero_pedido, email, nome_projeto.',
             'Selecionar planilha', 'save', self.escolher_planilha,
         )
-        lay.addWidget(self.row_planilha)
-        lay.addWidget(_divisor('#e3e5e2'))
+        cly.addWidget(self.row_planilha)
+        cly.addWidget(_divisor('#e3e5e2'))
 
         # Pre-carrega assinatura da pasta padrão, se existir
         pngs_padrao = sorted(PASTA_ASSINATURA.glob("*.png")) if PASTA_ASSINATURA.exists() else []
@@ -393,15 +435,18 @@ class App(QWidget):
         if pngs_padrao:
             self.assinatura_path = str(pngs_padrao[0])
             self.row_assinatura.definir_valor(pngs_padrao[0].name)
-        lay.addWidget(self.row_assinatura)
+        cly.addWidget(self.row_assinatura)
 
         self.div_tabela = _divisor('#e3e5e2')
         self.div_tabela.hide()
-        lay.addWidget(self.div_tabela)
+        cly.addWidget(self.div_tabela)
         self.tabela_widget = TabelaPedidos()
         self.tabela_widget.hide()
-        lay.addWidget(self.tabela_widget)
-        lay.addStretch()
+        cly.addWidget(self.tabela_widget)
+        cly.addStretch()
+
+        scroll.setWidget(conteudo)
+        lay.addWidget(scroll, 1)
 
     def _rodape_cartao(self, lay):
         footer = QFrame()
@@ -438,10 +483,10 @@ class App(QWidget):
         try:
             pedidos = _ler_planilha(Path(path))
         except Exception as exc:
-            QMessageBox.critical(self, 'Erro ao ler planilha', str(exc))
+            _dialogo(self, 'Erro ao ler planilha', str(exc), QMessageBox.Critical)
             return
         if not pedidos:
-            QMessageBox.warning(self, 'Planilha vazia', 'Nenhum pedido encontrado na planilha.')
+            _dialogo(self, 'Planilha vazia', 'Nenhum pedido encontrado na planilha.', QMessageBox.Warning)
             return
         self.planilha_path = path
         self.pedidos = pedidos
@@ -483,7 +528,10 @@ class App(QWidget):
                                     else 'Selecione a planilha com os pedidos para continuar.')
             self.start.setText('Iniciar automação   →' if pronto else 'Aguardando planilha')
         self.start.setEnabled(pronto)
-        self.start.setStyleSheet(ESTILO_INICIAR_ATIVO if pronto else ESTILO_INICIAR_INATIVO)
+        if self.started:
+            self.start.setStyleSheet(ESTILO_INICIAR_RODANDO)
+        else:
+            self.start.setStyleSheet(ESTILO_INICIAR_ATIVO if pronto else ESTILO_INICIAR_INATIVO)
 
     # ── Processamento ─────────────────────────────────────────────────────────
 
@@ -547,19 +595,19 @@ class App(QWidget):
         msg = f'{sucesso} pedido(s) enviado(s) com sucesso.'
         if erros:
             msg += f'\n{erros} pedido(s) com erro — verifique logs/app.log para detalhes.'
-        QMessageBox.information(self, titulo, msg)
+        _dialogo(self, titulo, msg)
 
     def _ao_falhar_tudo(self, msg: str):
         self.started = False
         self._atualizar_estado()
-        QMessageBox.critical(self, 'Falha crítica', msg)
+        _dialogo(self, 'Falha crítica', msg, QMessageBox.Critical)
 
     def closeEvent(self, event):
         if self.started:
-            resp = QMessageBox.question(
+            resp = _dialogo(
                 self, 'Fechar',
                 'Uma automação está em andamento. Fechar agora pode deixar pedidos incompletos.\n\nFechar mesmo assim?',
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
+                QMessageBox.Question, QMessageBox.Yes | QMessageBox.No,
             )
             if resp == QMessageBox.No:
                 event.ignore(); return

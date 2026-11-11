@@ -94,7 +94,7 @@ build/ dist/ *.exe     # artefatos de build
 - Nenhuma credencial, token ou senha no código-fonte
 - Verificar antes de cada commit: `git diff --cached --name-only` — confirmar que `.env` não está staged
 - CPFs e dados pessoais processados em memória e não logados em texto claro
-
+- Todas as modificacoes precisam atualizar o CHANGELOG.md e crie um vx.x.x com nome Desenvolvimento para tratar de uma versao que ainda nao foi publicada
 ---
 
 ## Referências

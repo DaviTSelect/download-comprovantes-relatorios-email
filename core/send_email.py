@@ -64,7 +64,7 @@ _AVISO_LGPD = (
 
 def _montar_corpo(com_assinatura: bool) -> str:
     assinatura_html = (
-        f'<br><img src="cid:{_CID_ASSINATURA}" alt="Assinatura" style="max-width:600px;"><br>'
+        f'<br><p>Atenciosamente,</p><img src="cid:{_CID_ASSINATURA}" alt="Assinatura" style="max-width:600px;"><br>'
         if com_assinatura else "<br>"
     )
     return f"""

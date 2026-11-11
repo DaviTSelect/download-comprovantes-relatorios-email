@@ -15,6 +15,29 @@ Versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.0.4] - 2026-11-11
+
+### Adicionado
+- Interface: barra de rolagem no corpo do cartão — aparece automaticamente quando há
+  muitos pedidos carregados; rodapé com botão "Iniciar" permanece fixo
+- Interface: estilo dedicado `ESTILO_INICIAR_RODANDO` (azul escuro + texto claro) para o
+  botão durante o processamento — corrige texto preto ilegível causado pelo estado
+  `disabled` padrão do Qt/Windows
+- Interface: diálogos de alerta, confirmação e erro com tema escuro via helper `_dialogo()`
+  — fundo `#203447`, texto claro, botão laranja; consistente com o restante da interface
+
+### Corrigido
+- Interface: cor inválida `#ebebе7` (com caractere cirílico) no stylesheet da scrollbar
+  corrigida para `#ebebe7`
+
+### Alterado
+- E-mail: "Atenciosamente," adicionado antes da imagem de assinatura no corpo HTML
+- Interface: dimensões padrão da janela ajustadas (altura 720→750 px, mínimo 640→670 px)
+- Regra de desenvolvimento: alterações que ainda não foram publicadas devem ser
+  documentadas em `CHANGELOG.md` sob a versão em desenvolvimento
+
+---
+
 ## [1.0.3] - 2026-11-10
 
 ### Adicionado
